@@ -622,9 +622,12 @@ input[type="range"]::-moz-range-thumb {
       <div style="position:relative; z-index:1;">
         <div style="font-size:42px; margin-bottom:20px;">✦</div>
         <h2 style="font-family:'Playfair Display',serif; font-size:clamp(28px,5vw,40px); font-weight:600; color:var(--cream); line-height:1.2; margin-bottom:16px;">Ready to Step Into<br>Your Freedom?</h2>
-        <p style="font-size:16px; color:var(--cream-muted); line-height:1.7; max-width:480px; margin:0 auto 32px;">Your clarity coach will walk you through the exact investment, financing options, and the best path for your personal situation. No pressure — just clarity.</p>
-        <a href="#book" class="cta-btn">Book Your Clarity Call <span style="font-size:18px;">→</span></a>
-        <p style="color:var(--muted); font-size:13px; margin-top:20px;">Financing options available • Personalized to your situation</p>
+        <p style="font-size:16px; color:var(--cream-muted); line-height:1.7; max-width:480px; margin:0 auto 32px;">Reach out to the person who shared this with you — they'll walk you through the exact investment, financing options, and the best path for your personal situation. No pressure — just clarity.</p>
+        <div style="display:inline-flex; align-items:center; gap:14px; padding:20px 36px; background:linear-gradient(135deg, rgba(200,165,92,0.12), rgba(200,165,92,0.04)); border:1.5px solid rgba(200,165,92,0.35); border-radius:16px;">
+          <span style="font-size:24px;">💬</span>
+          <span style="font-size:17px; font-weight:600; color:var(--gold); font-family:'Playfair Display',serif;">Message the person who introduced you to Ignite</span>
+        </div>
+        <p style="color:var(--muted); font-size:13px; margin-top:20px; line-height:1.6;">They're here to support you • Financing options available • Personalized to your situation</p>
       </div>
     </div>
   </div>
@@ -649,7 +652,7 @@ const PRODUCTS = [
   { name:"Ukon Turmeric Supplement", tag:"Okinawa Wellness", icon:"🌿", color:"#D4A853",
     desc:"Grown on private farms in Okinawa — one of the world's Blue Zones. Harvested at peak potency, fermented for bioavailability, and encapsulated with Kangen water.",
     highlights:["Blue Zone sourced","Anti-inflammatory","Immune support","Capsules, soap & tea"] },
-  { name:"MGuard EMF Protection", tag:"Home Sanctuary", icon:"🛡️", color:"#9B8EC4",
+  { name:"Emguarde EMF Protection", tag:"Home Sanctuary", icon:"🛡️", color:"#9B8EC4",
     desc:"Plugs into your home and neutralizes harmful electromagnetic frequencies from WiFi, devices, and electronics. Creates a calm, balanced environment for better focus and rest.",
     highlights:["EMF neutralization","Improved sleep & focus","Whole-home coverage","Plug & protect"] }
 ];
@@ -658,8 +661,8 @@ const LEGACY = [
   { name:"K8 Kangen Machine", icon:"💧", featured:false },
   { name:"Anespa Shower", icon:"🚿", featured:false },
   { name:"Ukon Supplement", icon:"🌿", featured:false },
-  { name:"MGuard EMF", icon:"🛡️", featured:false },
-  { name:"Super 501", icon:"⚡", featured:true }
+  { name:"Emguarde EMF", icon:"🛡️", featured:false },
+  { name:"Additional Loaner K8 Machine", icon:"⚡", featured:true }
 ];
 
 const ROADMAP = [
@@ -878,7 +881,7 @@ const legacyContainer = document.getElementById('legacyProducts');
 LEGACY.forEach(p => {
   const el = document.createElement('div');
   el.className = 'legacy-product' + (p.featured ? ' featured' : '');
-  el.innerHTML = `<div class="legacy-product-icon">${p.icon}</div><div class="legacy-product-name">${p.name}</div>${p.featured ? '<div class="legacy-product-badge">New Addition</div>' : ''}`;
+  el.innerHTML = `<div class="legacy-product-icon">${p.icon}</div><div class="legacy-product-name">${p.name}</div>${p.featured ? '<div class="legacy-product-badge">Extra Machine</div>' : ''}`;
   legacyContainer.appendChild(el);
 });
 
