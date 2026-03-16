@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Quad Strategy — Enagic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D0D0D;
+  --surface: #161616;
+  --card: #1C1C1C;
+  --card-hover: #222222;
+  --gold: #C8A55C;
+  --gold-light: #E2C97E;
+  --gold-dim: #A68A3E;
+  --cream: #F5F0E8;
+  --cream-muted: #BDB5A8;
+  --muted: #888880;
+  --green: #5CB87A;
+  --divider: #2A2A28;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(200,165,92,0.12); }
+  50% { box-shadow: 0 0 40px rgba(200,165,92,0.25); }
+}
+
+@keyframes shimmerBar {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(200%); }
+}
+
+/* ---- Utility ---- */
+.container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+
+.section-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; background: rgba(200,165,92,0.07);
+  border: 1px solid rgba(200,165,92,0.18); border-radius: 50px;
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 20px; font-weight: 600;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 5vw, 38px); font-weight: 600;
+  color: var(--cream); line-height: 1.2; margin-bottom: 16px;
+}
+
+.section-subtitle {
+  font-size: 16px; color: var(--cream-muted);
+  line-height: 1.7; margin-bottom: 36px;
+}
+
+/* ---- Scroll Reveal ---- */
+.reveal {
+  opacity: 0; transform: translateY(40px);
+  transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ---- Side Nav ---- */
+.side-nav {
+  position: fixed; right: 16px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 6px; z-index: 100;
+  align-items: flex-end;
+}
+.side-nav button {
+  width: 10px; height: 10px; border-radius: 5px;
+  background: var(--divider); border: none; cursor: pointer;
+  transition: all 0.3s ease; padding: 0;
+}
+.side-nav button.active { width: 28px; background: var(--gold); }
+
+/* ---- CTA Button ---- */
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 18px 40px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: var(--bg); border: none; border-radius: 60px;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  font-family: inherit; transition: all 0.3s ease;
+  letter-spacing: 0.02em; text-decoration: none;
+}
+.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(200,165,92,0.35); }
+
+/* ---- Range Sliders ---- */
+input[type="range"] {
+  -webkit-appearance: none; width: 100%; height: 6px;
+  border-radius: 3px; background: var(--divider); outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px;
+  border-radius: 50%; background: var(--gold); cursor: pointer;
+  box-shadow: 0 2px 8px rgba(200,165,92,0.4);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px; border: none;
+  border-radius: 50%; background: var(--gold); cursor: pointer;
+}
+
+/* ---- Product Card ---- */
+.product-card {
+  background: var(--card); border-radius: 16px; padding: 24px 20px;
+  border: 1.5px solid var(--divider); cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative; overflow: hidden;
+}
+.product-card:hover { background: var(--card-hover); }
+.product-card.active { background: var(--card-hover); transform: scale(1.01); }
+.product-card .top-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  opacity: 0; transition: opacity 0.3s;
+}
+.product-card.active .top-bar { opacity: 1; }
+.product-card .expand-body {
+  max-height: 0; overflow: hidden; transition: max-height 0.4s ease, margin 0.3s ease;
+  margin-top: 0;
+}
+.product-card.active .expand-body { max-height: 300px; margin-top: 16px; }
+
+.product-header { display: flex; align-items: center; gap: 12px; }
+.product-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.product-info { flex: 1; min-width: 0; }
+.product-name { color: var(--cream); font-size: 16px; font-weight: 600; font-family: 'Playfair Display', serif; }
+.product-tag { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+.product-arrow {
+  color: var(--muted); font-size: 18px; transition: transform 0.3s ease;
+}
+.product-card.active .product-arrow { transform: rotate(180deg); }
+
+.product-desc { color: var(--cream-muted); font-size: 14px; line-height: 1.7; margin-bottom: 16px; }
+.highlights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.highlight-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 8px; font-size: 12px; color: var(--cream);
+}
+.highlight-dot { font-size: 10px; }
+
+/* ---- Accordion (Quad Benefits) ---- */
+.accordion-item {
+  background: var(--card); border-radius: 14px; padding: 20px 24px;
+  border: 1px solid var(--divider); cursor: pointer; transition: all 0.3s ease;
+}
+.accordion-item:hover { background: var(--card-hover); }
+.accordion-item.active { border-color: rgba(200,165,92,0.25); background: var(--card-hover); }
+.accordion-header { display: flex; align-items: center; gap: 14px; }
+.accordion-icon { font-size: 24px; }
+.accordion-title { color: var(--cream); font-size: 16px; font-weight: 600; flex: 1; }
+.accordion-arrow { color: var(--muted); transition: transform 0.3s; }
+.accordion-item.active .accordion-arrow { transform: rotate(180deg); }
+.accordion-body {
+  max-height: 0; overflow: hidden; transition: max-height 0.4s ease, margin 0.3s ease, opacity 0.3s ease;
+  opacity: 0; margin-top: 0;
+}
+.accordion-item.active .accordion-body { max-height: 200px; opacity: 1; margin-top: 14px; }
+.accordion-text { color: var(--cream-muted); font-size: 14px; line-height: 1.7; padding-left: 38px; }
+
+/* ---- Comparison Bars ---- */
+.comp-row { margin-bottom: 20px; }
+.comp-label { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.comp-label span { color: var(--cream); font-size: 14px; font-weight: 500; }
+.comp-bars { display: flex; gap: 8px; }
+.comp-bar-wrap { flex: 1; }
+.comp-track { height: 32px; background: var(--card); border-radius: 8px; overflow: hidden; position: relative; }
+.comp-fill {
+  height: 100%; border-radius: 8px; display: flex; align-items: center;
+  justify-content: flex-end; padding-right: 10px;
+  width: 0; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.comp-fill span { color: #fff; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.comp-bar-label { font-size: 11px; margin-top: 4px; }
+.comp-bar-label.k8 { color: var(--muted); }
+.comp-bar-label.quad { color: var(--gold); }
+
+/* ---- Roadmap Timeline ---- */
+.roadmap-toggle { display: flex; gap: 6px; margin-bottom: 28px; flex-wrap: wrap; justify-content: center; }
+.roadmap-toggle button {
+  padding: 10px 24px; border-radius: 50px;
+  border: 1.5px solid var(--divider); background: transparent;
+  color: var(--muted); cursor: pointer; font-size: 14px;
+  font-weight: 600; font-family: inherit; transition: all 0.3s ease;
+}
+.roadmap-toggle button.active {
+  border-color: var(--gold); background: rgba(200,165,92,0.08); color: var(--gold);
+}
+
+.timeline { position: relative; }
+.timeline::before {
+  content: ''; position: absolute; left: 23px; top: 0; bottom: 0;
+  width: 2px; background: var(--divider);
+}
+.timeline-item {
+  display: flex; gap: 20px; margin-bottom: 16px; align-items: center;
+  animation: fadeSlideIn 0.4s ease both;
+}
+.timeline-dot {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--card); border: 2px solid var(--divider);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cream); font-weight: 700; font-size: 15px;
+  z-index: 1; flex-shrink: 0; font-family: inherit;
+}
+.timeline-dot.milestone { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+.timeline-content {
+  flex: 1; background: var(--card); border-radius: 14px;
+  padding: 16px 20px; border: 1px solid var(--divider);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px;
+}
+.timeline-content.milestone { background: rgba(200,165,92,0.05); border-color: rgba(200,165,92,0.25); }
+.timeline-rank { color: var(--cream); font-size: 15px; font-weight: 600; }
+.timeline-note { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.timeline-commission { color: var(--green); font-size: 18px; font-weight: 700; font-family: 'Playfair Display', serif; text-align: right; }
+.timeline-cumulative { color: var(--muted); font-size: 11px; margin-top: 2px; text-align: right; }
+
+/* ---- Calculator ---- */
+.calc-wrap { background: var(--card); border-radius: 20px; padding: 36px 32px; border: 1px solid var(--divider); }
+.calc-title { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--cream); margin-bottom: 8px; font-weight: 600; }
+.calc-desc { color: var(--muted); font-size: 14px; margin-bottom: 28px; line-height: 1.5; }
+.calc-label {
+  color: var(--cream-muted); font-size: 13px; display: block;
+  margin-bottom: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.calc-toggle { display: flex; gap: 10px; margin-bottom: 24px; }
+.calc-toggle button {
+  flex: 1; padding: 12px 16px; border-radius: 10px;
+  border: 1.5px solid var(--divider); background: transparent;
+  color: var(--muted); cursor: pointer; font-size: 15px;
+  font-weight: 600; font-family: inherit; transition: all 0.3s ease;
+}
+.calc-toggle button.active {
+  border-color: var(--gold); background: rgba(200,165,92,0.08); color: var(--gold);
+}
+.calc-results {
+  background: var(--bg); border-radius: 16px; padding: 24px;
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;
+}
+.calc-result { text-align: center; }
+.calc-result-label {
+  color: var(--muted); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 6px;
+}
+.calc-result-value { font-size: 24px; font-weight: 700; font-family: 'Playfair Display', serif; }
+.calc-hack-note {
+  margin-top: 16px; padding: 12px 16px; background: rgba(200,165,92,0.06);
+  border-radius: 10px; border: 1px solid rgba(200,165,92,0.18);
+}
+.calc-hack-note p { color: var(--gold); font-size: 13px; margin: 0; line-height: 1.5; }
+
+/* ---- Legacy Suite ---- */
+.legacy-wrap {
+  background: var(--card); border-radius: 20px; padding: 32px;
+  border: 1px solid rgba(200,165,92,0.18); position: relative; overflow: hidden;
+}
+.legacy-wrap::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+}
+.legacy-products { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 28px; }
+.legacy-product {
+  padding: 14px 18px; border-radius: 12px; text-align: center; min-width: 110;
+  background: var(--bg); border: 1.5px solid var(--divider);
+}
+.legacy-product.featured { background: rgba(200,165,92,0.09); border-color: var(--gold); }
+.legacy-product-icon { font-size: 24px; margin-bottom: 6px; }
+.legacy-product-name { font-size: 12px; color: var(--cream-muted); font-weight: 600; }
+.legacy-product.featured .legacy-product-name { color: var(--gold); }
+.legacy-product-badge { font-size: 10px; color: var(--gold); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+.legacy-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.legacy-stat { background: var(--bg); border-radius: 12px; padding: 18px; text-align: center; }
+.legacy-stat-value { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--gold); }
+.legacy-stat-label { font-size: 13px; color: var(--cream); font-weight: 500; margin-top: 4px; }
+.legacy-stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ---- Investment ---- */
+.invest-card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 18px 20px; background: var(--card); border-radius: 14px;
+  border: 1px solid var(--divider);
+}
+.invest-icon { font-size: 28px; flex-shrink: 0; }
+.invest-info { flex: 1; }
+.invest-name { color: var(--cream); font-size: 15px; font-weight: 600; }
+.invest-result { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.invest-cost { color: #E07070; font-size: 15px; font-weight: 700; font-family: 'Playfair Display', serif; white-space: nowrap; }
+
+/* ---- Pie Chart ---- */
+.pie-wrap { text-align: center; }
+.pie-label { margin-top: 12px; font-size: 13px; }
+.pie-value { font-family: 'Playfair Display', serif; font-size: 20px; margin-top: 4px; }
+
+/* ---- CTA Block ---- */
+.cta-block {
+  background: linear-gradient(135deg, var(--card), var(--surface));
+  border-radius: 28px; padding: 56px 36px; border: 1px solid rgba(200,165,92,0.15);
+  position: relative; overflow: hidden; text-align: center;
+}
+.cta-block::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(200,165,92,0.06) 0%, transparent 60%);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .container { padding: 0 16px; }
+  .highlights-grid { grid-template-columns: 1fr; }
+  .calc-results { grid-template-columns: 1fr; gap: 12px; }
+  .legacy-stats { grid-template-columns: 1fr; }
+  .comp-bars { flex-direction: column; }
+  .side-nav { display: none; }
+  .invest-card { flex-wrap: wrap; }
+  .invest-cost { width: 100%; text-align: left; }
+}
+</style>
+</head>
+<body>
+
+<!-- Side Navigation -->
+<nav class="side-nav" id="sideNav"></nav>
+
+<!-- ========== HERO ========== -->
+<section id="hero" style="min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:40px 24px; position:relative; overflow:hidden;">
+  <div style="position:absolute; inset:0; background:radial-gradient(ellipse at 50% 30%, rgba(200,165,92,0.05) 0%, transparent 60%);"></div>
+  <div style="position:relative; z-index:1; max-width:680px;">
+    <div class="section-tag" style="margin:0 auto 24px;">✦ The Strategy</div>
+    <h1 style="font-family:'Playfair Display',serif; font-size:clamp(36px,7vw,64px); font-weight:600; line-height:1.1; margin-bottom:20px; color:var(--cream);">The Quad Strategy</h1>
+    <p style="font-size:clamp(16px,2.5vw,20px); color:var(--cream-muted); line-height:1.6; max-width:520px; margin:0 auto 12px;">The proven approach to fast-tracking your results, maximizing your commissions, and building a freedom-based business from day one.</p>
+    <p style="font-size:14px; color:var(--muted); margin-bottom:40px;">Scroll to explore how the numbers work ↓</p>
+    <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+      <div style="padding:16px 24px; background:var(--card); border-radius:14px; border:1px solid var(--divider); min-width:120px;">
+        <div style="font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--gold);">$20K+</div>
+        <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em;">First 5 Sales</div>
+      </div>
+      <div style="padding:16px 24px; background:var(--card); border-radius:14px; border:1px solid var(--divider); min-width:120px;">
+        <div style="font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--gold);">4×</div>
+        <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em;">Faster to 6A</div>
+      </div>
+      <div style="padding:16px 24px; background:var(--card); border-radius:14px; border:1px solid var(--divider); min-width:120px;">
+        <div style="font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--gold);">$7K+</div>
+        <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em;">Per Sale at Max</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CORE PRODUCTS ========== -->
+<section id="products" class="reveal" style="padding:100px 0;">
+  <div class="container">
+    <div class="section-tag">✦ The Foundation</div>
+    <h2 class="section-title">The Core Four Products</h2>
+    <p class="section-subtitle">Four powerful products designed to create a holistic wellness sanctuary in your home — each one addressing a different dimension of your health.</p>
+    <div id="productsContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+</section>
+
+<!-- ========== QUAD BENEFITS ========== -->
+<section id="quad-benefits" class="reveal" style="padding:100px 0;">
+  <div class="container">
+    <div class="section-tag">✦ Why The Quad</div>
+    <h2 class="section-title">Why Start With All Four?</h2>
+    <p class="section-subtitle">You only need one product to become a distributor — so why start with four? Because the Quad Strategy changes everything about your trajectory.</p>
+    <div id="benefitsContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
+    <div style="margin-top:32px; background:linear-gradient(135deg, rgba(200,165,92,0.08), transparent); border-radius:16px; padding:28px; border:1px solid rgba(200,165,92,0.12); text-align:center;">
+      <div style="color:var(--gold); font-size:13px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Immediate Earnings From Your Own Purchase</div>
+      <div style="font-family:'Playfair Display',serif; font-size:42px; font-weight:700; color:var(--cream);" data-animate-number="776">$0+</div>
+      <div style="color:var(--muted); font-size:14px; margin-top:6px;">$195 (Anespa) + $351 (K8) + $230 (Ukon) — earned before you even launch</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== COMMISSION BREAKDOWN ========== -->
+<section id="commission" class="reveal" style="padding:100px 0;">
+  <div class="container">
+    <div class="section-tag">✦ The 8-Point System</div>
+    <h2 class="section-title">Think of It Like a Pie</h2>
+    <p class="section-subtitle">Enagic's compensation plan has 8 points of commission — like 8 slices of a pie. As you rank up, you earn more slices. With the Quad Strategy, you can eventually earn all 8.</p>
+
+    <div style="display:flex; gap:40px; align-items:center; flex-wrap:wrap; justify-content:center;">
+      <div class="pie-wrap">
+        <svg id="pie1" width="220" height="220" viewBox="0 0 220 220"></svg>
+        <div class="pie-label" style="color:var(--muted);">Starting Out (1A)</div>
+        <div class="pie-value" style="color:var(--cream);">$351/point</div>
+      </div>
+      <div style="color:var(--gold); font-size:32px;">→</div>
+      <div class="pie-wrap">
+        <svg id="pie8" width="220" height="220" viewBox="0 0 220 220"></svg>
+        <div class="pie-label" style="color:var(--gold); font-weight:600;">Quad at 6A (All 8)</div>
+        <div class="pie-value" style="color:var(--gold);">$7,164+</div>
+      </div>
+    </div>
+
+    <div style="margin-top:48px;">
+      <h3 style="font-family:'Playfair Display',serif; font-size:22px; color:var(--cream); margin-bottom:24px;">K8 vs. Quad — Side by Side</h3>
+      <div id="compBars"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 2A UKON HACK ========== -->
+<section id="ukon-hack" class="reveal" style="padding:100px 0;">
+  <div class="container">
+    <div class="section-tag">✦ The Secret Advantage</div>
+    <h2 class="section-title">The 2A Ukon Hack</h2>
+    <p class="section-subtitle">This is where the Quad Strategy truly shines. By placing your Ukon in your 2A lane, your top position earns an extra 2 commission points on every single sale you make — automatically.</p>
+
+    <div style="background:var(--card); border-radius:20px; padding:32px; border:1px solid var(--divider);">
+      <!-- Diagram -->
+      <div style="text-align:center; margin-bottom:28px;">
+        <div style="display:inline-flex; flex-direction:column; align-items:center; gap:8px;">
+          <div style="padding:14px 28px; background:rgba(200,165,92,0.09); border:2px solid var(--gold); border-radius:12px; color:var(--gold); font-weight:700; font-size:15px;">
+            🔝 Your Top Position (MGA)
+          </div>
+          <div style="color:var(--gold); font-size:13px;">Always earns 2A commissions ↓</div>
+          <div style="display:flex; gap:16px; align-items:flex-start;">
+            <div style="text-align:center;">
+              <div style="width:2px; height:20px; background:var(--divider); margin:0 auto;"></div>
+              <div style="padding:10px 20px; background:var(--card); border:1.5px solid var(--divider); border-radius:10px; font-size:13px; color:var(--cream-muted);">
+                1A Lane<br><span style="font-size:11px; color:var(--muted);">Anespa &amp; K8</span>
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:2px; height:20px; background:var(--gold); margin:0 auto;"></div>
+              <div style="padding:10px 20px; background:rgba(200,165,92,0.07); border:1.5px solid rgba(200,165,92,0.4); border-radius:10px; font-size:13px; color:var(--gold); animation:pulseGlow 2s infinite;">
+                2A Lane ✦<br><span style="font-size:11px;">Your Ukon → All sales here</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px; background:var(--divider); margin:24px 0;"></div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:var(--bg); border-radius:12px; padding:20px; text-align:center;">
+          <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Extra per K8 sale</div>
+          <div style="font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--green);">+$702</div>
+        </div>
+        <div style="background:var(--bg); border-radius:12px; padding:20px; text-align:center;">
+          <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Extra per Quad sale</div>
+          <div style="font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--gold);">+$2,020</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px; padding:16px 20px; background:rgba(92,184,122,0.06); border:1px solid rgba(92,184,122,0.18); border-radius:12px; text-align:center;">
+        <p style="color:var(--green); font-size:14px; margin:0; line-height:1.6;">
+          With just 1 Quad sale per month, the 2A Ukon Hack earns you an extra <strong>$24,240/year</strong> — with zero additional work. It's built into the structure.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== ROADMAP ========== -->
+<section id="roadmap" class="reveal" style="padding:100px 0;">
+  <div class="container">
+    <div class="section-tag">✦ Your Roadmap</div>
+    <h2 class="section-title">Your Path to $20K — Then $50K</h2>
+    <p class="section-subtitle">Here's exactly what happens sale by sale using the Quad Strategy. Watch how quickly the commissions compound as you move through the ranks.</p>
+
+    <div class="roadmap-toggle">
+      <button class="active" data-sales="5">First 5 Sales → $20,200</button>
+      <button data-sales="10">First 10 Sales → $50,500</button>
+    </div>
+
+    <div class="timeline" id="timeline"></div>
+
+    <div id="roadmapTotal" style="margin-top:24px; background:linear-gradient(135deg, rgba(200,165,92,0.08), rgba(200,165,92,0.02)); border-radius:16px; padding:24px; text-align:center; border:1px solid rgba(200,165,92,0.18);">
+      <div style="color:var(--gold); font-size:14px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Total from <span id="totalSalesLabel">5</span> sales</div>
+      <div style="color:var(--cream); font-size:42px; font-weight:700; font-family:'Playfair Display',serif;" id="totalValue">$20,200</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== LEGACY SUITE ========== -->
+<section id="legacy-suite" class="reveal" style="padding:100px 0;">
+  <div class="container">
+    <div class="section-tag">✦ The Ultimate Package</div>
+    <h2 class="section-title">The Legacy Suite</h2>
+    <p class="section-subtitle">For those ready to go all-in at the highest level, the Legacy Suite adds the powerful Super 501 to the Quad — Enagic's premium commercial-grade machine. Five products. Maximum commission potential.</p>
+
+    <div class="legacy-wrap">
+      <div class="legacy-products" id="legacyProducts"></div>
+      <div class="legacy-stats">
+        <div class="legacy-stat">
+          <div class="legacy-stat-value">5</div>
+          <div class="legacy-stat-label">Products</div>
+          <div class="legacy-stat-sub">Complete ecosystem</div>
+        </div>
+        <div class="legacy-stat">
+          <div class="legacy-stat-value">10+</div>
+          <div class="legacy-stat-label">Commission Points</div>
+          <div class="legacy-stat-sub">Even more pie slices</div>
+        </div>
+        <div class="legacy-stat">
+          <div class="legacy-stat-value">5×</div>
+          <div class="legacy-stat-label">Rank Acceleration</div>
+          <div class="legacy-stat-sub">Fastest path to 6A</div>
+        </div>
+      </div>
+      <div style="padding:16px 20px; background:rgba(200,165,92,0.06); border-radius:12px; border:1px solid rgba(200,165,92,0.15);">
+        <p style="color:var(--gold-light); font-size:14px; line-height:1.6; margin:0; text-align:center;">
+          The Legacy Suite is the ultimate investment for those who want maximum commissions, maximum health benefits, and the fastest path to financial freedom. Your clarity coach will walk you through exactly how this looks for your situation.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== INVESTMENT MINDSET ========== -->
+<section id="investment" class="reveal" style="padding:100px 0;">
+  <div class="container">
+    <div class="section-tag">✦ Perspective Shift</div>
+    <h2 class="section-title">It's an Investment — Let's Be Real</h2>
+    <p class="section-subtitle">With full transparency — this is a significant investment. But let's put it in perspective against what people already spend without thinking twice.</p>
+
+    <div id="investCards" style="display:grid; gap:12px; margin-bottom:32px;"></div>
+
+    <div style="background:linear-gradient(135deg, rgba(200,165,92,0.08), rgba(200,165,92,0.02)); border-radius:20px; padding:32px; border:1px solid rgba(200,165,92,0.18); text-align:center;">
+      <div style="font-size:15px; color:var(--cream-muted); line-height:1.8; max-width:560px; margin:0 auto 20px;">This investment gives you back two things none of the above ever will:</div>
+      <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+        <div style="padding:18px 28px; background:var(--card); border-radius:14px; border:1px solid rgba(200,165,92,0.18);">
+          <div style="font-size:28px; margin-bottom:6px;">🌿</div>
+          <div style="font-family:'Playfair Display',serif; font-size:20px; color:var(--gold); font-weight:600;">Your Health</div>
+          <div style="color:var(--muted); font-size:12px; margin-top:4px;">Products that last 20+ years</div>
+        </div>
+        <div style="padding:18px 28px; background:var(--card); border-radius:14px; border:1px solid rgba(200,165,92,0.18);">
+          <div style="font-size:28px; margin-bottom:6px;">✨</div>
+          <div style="font-family:'Playfair Display',serif; font-size:20px; color:var(--gold); font-weight:600;">Your Freedom</div>
+          <div style="color:var(--muted); font-size:12px; margin-top:4px;">Income that grows with you</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CALCULATOR ========== -->
+<section id="calculator" class="reveal" style="padding:100px 0;">
+  <div class="container">
+    <div class="section-tag">✦ Run Your Numbers</div>
+    <h2 class="section-title">See What's Possible For You</h2>
+    <p class="section-subtitle">Adjust the sliders to model your potential earnings based on your package, rank, and activity level.</p>
+
+    <div class="calc-wrap">
+      <h3 class="calc-title">Commission Calculator</h3>
+      <p class="calc-desc">See your potential earnings with the Quad Strategy</p>
+
+      <div>
+        <label class="calc-label">Package Type</label>
+        <div class="calc-toggle" id="packageToggle">
+          <button data-pkg="k8">K8 Only</button>
+          <button data-pkg="quad" class="active">Quad</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <label class="calc-label">Your Rank: <span id="rankLabel">6A ⭐</span></label>
+        <input type="range" min="1" max="6" value="6" id="rankSlider">
+        <div style="display:flex; justify-content:space-between; color:var(--muted); font-size:12px; margin-top:4px;">
+          <span>1A</span><span>6A</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:28px;">
+        <label class="calc-label">Sales Per Month: <span id="salesLabel">2</span></label>
+        <input type="range" min="1" max="10" value="2" id="salesSlider">
+        <div style="display:flex; justify-content:space-between; color:var(--muted); font-size:12px; margin-top:4px;">
+          <span>1</span><span>10</span>
+        </div>
+      </div>
+
+      <div class="calc-results">
+        <div class="calc-result">
+          <div class="calc-result-label">Per Sale</div>
+          <div class="calc-result-value" style="color:var(--green);" id="calcPerSale">$8,080</div>
+        </div>
+        <div class="calc-result">
+          <div class="calc-result-label">Monthly</div>
+          <div class="calc-result-value" style="color:var(--gold-light);" id="calcMonthly">$16,160</div>
+        </div>
+        <div class="calc-result">
+          <div class="calc-result-label">Yearly</div>
+          <div class="calc-result-value" style="color:var(--cream);" id="calcYearly">$193,920</div>
+        </div>
+      </div>
+
+      <div class="calc-hack-note" id="hackNote">
+        <p>✦ With the 2A Ukon Hack, your top position earns an extra 2 commission points on every sale — that's an additional $2,020 per sale built in.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CTA ========== -->
+<section id="cta" class="reveal" style="padding:120px 0 100px;">
+  <div class="container" style="text-align:center;">
+    <div class="cta-block">
+      <div style="position:relative; z-index:1;">
+        <div style="font-size:42px; margin-bottom:20px;">✦</div>
+        <h2 style="font-family:'Playfair Display',serif; font-size:clamp(28px,5vw,40px); font-weight:600; color:var(--cream); line-height:1.2; margin-bottom:16px;">Ready to Step Into<br>Your Freedom?</h2>
+        <p style="font-size:16px; color:var(--cream-muted); line-height:1.7; max-width:480px; margin:0 auto 32px;">Your clarity coach will walk you through the exact investment, financing options, and the best path for your personal situation. No pressure — just clarity.</p>
+        <a href="#book" class="cta-btn">Book Your Clarity Call <span style="font-size:18px;">→</span></a>
+        <p style="color:var(--muted); font-size:13px; margin-top:20px;">Financing options available • Personalized to your situation</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer style="padding:40px 24px; text-align:center; border-top:1px solid var(--divider);">
+  <p style="color:var(--muted); font-size:12px; line-height:1.6; max-width:500px; margin:0 auto;">
+    Results vary based on individual effort, market conditions, and other factors. Commissions shown are based on the Enagic compensation plan structure. All figures in USD unless otherwise noted.
+  </p>
+</footer>
+
+<script>
+// ======== DATA ========
+const PRODUCTS = [
+  { name:"K8 Kangen Water Machine", tag:"Flagship Ionizer", icon:"💧", color:"#4A9EDE",
+    desc:"Transforms tap water into antioxidant-rich, hydrogen-infused Kangen water using 8 platinum-dipped titanium plates. Over 68 uses — from drinking water to beauty toner to natural disinfectant.",
+    highlights:["Molecular hydration","68+ uses","Built to last 20+ years","Replaces dozens of products"] },
+  { name:"Anespa Mineral Shower", tag:"Luxury Spa System", icon:"🚿", color:"#7EBDC2",
+    desc:"Removes chlorine and heavy metals from shower water, replacing them with natural hot spring minerals from Japan. Transforms your daily shower into a healing ritual.",
+    highlights:["Removes harmful chemicals","Japanese hot spring minerals","Softer hair & skin","Daily rejuvenation"] },
+  { name:"Ukon Turmeric Supplement", tag:"Okinawa Wellness", icon:"🌿", color:"#D4A853",
+    desc:"Grown on private farms in Okinawa — one of the world's Blue Zones. Harvested at peak potency, fermented for bioavailability, and encapsulated with Kangen water.",
+    highlights:["Blue Zone sourced","Anti-inflammatory","Immune support","Capsules, soap & tea"] },
+  { name:"MGuard EMF Protection", tag:"Home Sanctuary", icon:"🛡️", color:"#9B8EC4",
+    desc:"Plugs into your home and neutralizes harmful electromagnetic frequencies from WiFi, devices, and electronics. Creates a calm, balanced environment for better focus and rest.",
+    highlights:["EMF neutralization","Improved sleep & focus","Whole-home coverage","Plug & protect"] }
+];
+
+const LEGACY = [
+  { name:"K8 Kangen Machine", icon:"💧", featured:false },
+  { name:"Anespa Shower", icon:"🚿", featured:false },
+  { name:"Ukon Supplement", icon:"🌿", featured:false },
+  { name:"MGuard EMF", icon:"🛡️", featured:false },
+  { name:"Super 501", icon:"⚡", featured:true }
+];
+
+const ROADMAP = [
+  { sale:1, rank:"3A", commission:3030, cumulative:3030, note:"Your very first sale" },
+  { sale:2, rank:"3A", commission:3030, cumulative:6060, note:"Building momentum" },
+  { sale:3, rank:"4A", commission:4040, cumulative:10100, note:"Already 5 figures!" },
+  { sale:4, rank:"5A", commission:5050, cumulative:15150, note:"Accelerating fast" },
+  { sale:5, rank:"5A", commission:5050, cumulative:20200, note:"$20K milestone!" },
+  { sale:6, rank:"6A", commission:6060, cumulative:26260, note:"Max rank unlocked" },
+  { sale:7, rank:"6A", commission:6060, cumulative:32320, note:"Compounding power" },
+  { sale:8, rank:"6A", commission:6060, cumulative:38380, note:"Consistency pays" },
+  { sale:9, rank:"6A", commission:6060, cumulative:44440, note:"Almost $50K" },
+  { sale:10, rank:"6A", commission:6060, cumulative:50500, note:"$50K from 10 sales!" }
+];
+
+const QUAD_BENEFITS = [
+  { title:"Experience All 4 Products", desc:"Create a holistic wellness sanctuary at home — water, shower, supplements, and EMF protection. Products built to last 25+ years that replace dozens of household items.", icon:"🏠" },
+  { title:"Earn From Day One", desc:"You're guaranteed to earn $776+ right away from your own product sales before you even launch your business. Money comes directly from Enagic to you.", icon:"💰" },
+  { title:"3× Commissions Immediately", desc:"Start earning triple commissions on your very first sales. The Quad structure positions you to earn from multiple points instantly.", icon:"⚡" },
+  { title:"Reach 6A 4× Faster", desc:"Only 25 Quad sales vs. 100 single K8 sales to reach the maximum rank. That's the difference between months and years.", icon:"🚀" },
+  { title:"All-In Mindset", desc:"When you invest at this level, you treat it like a real business. You show up differently. You lead by example. Your team sees your commitment.", icon:"🔥" }
+];
+
+const INVEST_ITEMS = [
+  { item:"University Degree", cost:"$40,000 – $80,000+", result:"Often leads to a job outside your field", icon:"🎓" },
+  { item:"Trade School", cost:"$15,000 – $20,000", result:"Learn one skill, work your way up", icon:"🔧" },
+  { item:"New Car (Financed)", cost:"$40,000+", result:"Only goes down in value", icon:"🚗" },
+  { item:"iPhones Over 5 Years", cost:"$5,000+", result:"Obsolete in 2 years each", icon:"📱" },
+  { item:"Wedding", cost:"$30,000+", result:"One beautiful day", icon:"💒" }
+];
+
+const COMP_DATA = [
+  { label:"Per Point Commission", k8:351, quad:1010, max:1100 },
+  { label:"All 8 Points (per sale)", k8:2808, quad:7164, max:7500 },
+  { label:"5 Sales/Month at Max Rank", k8:14040, quad:35820, max:58000 }
+];
+
+const SECTIONS = ["hero","products","quad-benefits","commission","ukon-hack","roadmap","legacy-suite","investment","calculator","cta"];
+
+// ======== SIDE NAV ========
+const sideNav = document.getElementById('sideNav');
+SECTIONS.forEach((s, i) => {
+  const btn = document.createElement('button');
+  btn.dataset.idx = i;
+  btn.addEventListener('click', () => document.getElementById(s).scrollIntoView({ behavior:'smooth' }));
+  sideNav.appendChild(btn);
+});
+
+function updateNav() {
+  const scrollPos = window.scrollY + window.innerHeight / 3;
+  let active = 0;
+  for (let i = SECTIONS.length - 1; i >= 0; i--) {
+    const el = document.getElementById(SECTIONS[i]);
+    if (el && el.offsetTop <= scrollPos) { active = i; break; }
+  }
+  sideNav.querySelectorAll('button').forEach((btn, i) => {
+    btn.classList.toggle('active', i === active);
+  });
+}
+window.addEventListener('scroll', updateNav, { passive: true });
+updateNav();
+
+// ======== SCROLL REVEAL ========
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ======== PRODUCT CARDS ========
+let activeProduct = -1;
+const productsContainer = document.getElementById('productsContainer');
+PRODUCTS.forEach((p, i) => {
+  const card = document.createElement('div');
+  card.className = 'product-card';
+  card.innerHTML = `
+    <div class="top-bar" style="background:linear-gradient(90deg, ${p.color}, ${p.color}80);"></div>
+    <div class="product-header">
+      <div class="product-icon" style="background:${p.color}18;">${p.icon}</div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-tag" style="color:${p.color};">${p.tag}</div>
+      </div>
+      <div class="product-arrow">▾</div>
+    </div>
+    <div class="expand-body">
+      <p class="product-desc">${p.desc}</p>
+      <div class="highlights-grid">
+        ${p.highlights.map(h => `<div class="highlight-chip" style="background:${p.color}0A;"><span class="highlight-dot" style="color:${p.color};">◆</span>${h}</div>`).join('')}
+      </div>
+    </div>`;
+  card.addEventListener('click', () => {
+    const wasActive = card.classList.contains('active');
+    productsContainer.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'));
+    if (!wasActive) card.classList.add('active');
+  });
+  productsContainer.appendChild(card);
+});
+
+// ======== QUAD BENEFITS ACCORDION ========
+const benefitsContainer = document.getElementById('benefitsContainer');
+QUAD_BENEFITS.forEach((b, i) => {
+  const item = document.createElement('div');
+  item.className = 'accordion-item';
+  item.innerHTML = `
+    <div class="accordion-header">
+      <span class="accordion-icon">${b.icon}</span>
+      <span class="accordion-title">${b.title}</span>
+      <span class="accordion-arrow">▾</span>
+    </div>
+    <div class="accordion-body">
+      <p class="accordion-text">${b.desc}</p>
+    </div>`;
+  item.addEventListener('click', () => {
+    const wasActive = item.classList.contains('active');
+    benefitsContainer.querySelectorAll('.accordion-item').forEach(a => a.classList.remove('active'));
+    if (!wasActive) item.classList.add('active');
+  });
+  benefitsContainer.appendChild(item);
+});
+
+// ======== PIE CHARTS ========
+function drawPie(svgId, activeSlices) {
+  const svg = document.getElementById(svgId);
+  const size = 220, cx = size/2, cy = size/2, r = 85;
+  const sliceAngle = 360 / 8;
+  let html = '';
+  for (let i = 0; i < 8; i++) {
+    const active = i < activeSlices;
+    const startA = (i * sliceAngle - 90) * Math.PI / 180;
+    const endA = ((i+1) * sliceAngle - 90) * Math.PI / 180;
+    const x1 = cx + r * Math.cos(startA);
+    const y1 = cy + r * Math.sin(startA);
+    const x2 = cx + r * Math.cos(endA);
+    const y2 = cy + r * Math.sin(endA);
+    const d = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 0,1 ${x2},${y2} Z`;
+    const midA = ((i+0.5) * sliceAngle - 90) * Math.PI / 180;
+    const lx = cx + r*0.6 * Math.cos(midA);
+    const ly = cy + r*0.6 * Math.sin(midA);
+    const fill = active ? `hsl(${40+i*5}, ${60+i*3}%, ${45+i*3}%)` : '#2A2A28';
+    html += `<path d="${d}" fill="${fill}" stroke="#0D0D0D" stroke-width="2" opacity="${active?1:0.3}"/>`;
+    html += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${active?'#fff':'#555'}" font-size="11" font-weight="600" font-family="DM Sans">${i+1}</text>`;
+  }
+  html += `<circle cx="${cx}" cy="${cy}" r="22" fill="#0D0D0D"/>`;
+  html += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" fill="#C8A55C" font-size="14" font-weight="700" font-family="DM Sans">${activeSlices}/8</text>`;
+  svg.innerHTML = html;
+}
+drawPie('pie1', 1);
+drawPie('pie8', 8);
+
+// ======== COMPARISON BARS ========
+const compBars = document.getElementById('compBars');
+COMP_DATA.forEach(c => {
+  const row = document.createElement('div');
+  row.className = 'comp-row';
+  row.innerHTML = `
+    <div class="comp-label"><span>${c.label}</span></div>
+    <div class="comp-bars">
+      <div class="comp-bar-wrap">
+        <div class="comp-track"><div class="comp-fill" style="background:linear-gradient(90deg,#4A6B8A,#4A9EDE);" data-width="${(c.k8/c.max)*100}"><span>$${c.k8.toLocaleString()}</span></div></div>
+        <div class="comp-bar-label k8">K8 Only</div>
+      </div>
+      <div class="comp-bar-wrap">
+        <div class="comp-track"><div class="comp-fill" style="background:linear-gradient(90deg,#A68A3E,#C8A55C);" data-width="${(c.quad/c.max)*100}"><span>$${c.quad.toLocaleString()}</span></div></div>
+        <div class="comp-bar-label quad">Quad Strategy ✦</div>
+      </div>
+    </div>`;
+  compBars.appendChild(row);
+});
+
+const barObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.comp-fill').forEach(fill => {
+        fill.style.width = fill.dataset.width + '%';
+      });
+    }
+  });
+}, { threshold: 0.3 });
+compBars.querySelectorAll('.comp-row').forEach(r => barObserver.observe(r));
+
+// ======== ROADMAP TIMELINE ========
+let activeSales = 5;
+function renderTimeline() {
+  const timeline = document.getElementById('timeline');
+  const steps = ROADMAP.slice(0, activeSales);
+  timeline.innerHTML = '';
+  steps.forEach((s, i) => {
+    const milestone = s.sale === 5 || s.sale === 10;
+    const item = document.createElement('div');
+    item.className = 'timeline-item';
+    item.style.animationDelay = (i * 0.06) + 's';
+    item.innerHTML = `
+      <div class="timeline-dot ${milestone ? 'milestone' : ''}">${s.sale}</div>
+      <div class="timeline-content ${milestone ? 'milestone' : ''}">
+        <div><div class="timeline-rank">${s.rank} Commission</div><div class="timeline-note">${s.note}</div></div>
+        <div><div class="timeline-commission">$${s.commission.toLocaleString()}</div><div class="timeline-cumulative">Total: $${s.cumulative.toLocaleString()}</div></div>
+      </div>`;
+    timeline.appendChild(item);
+  });
+  document.getElementById('totalSalesLabel').textContent = activeSales;
+  animateNumber(document.getElementById('totalValue'), steps[steps.length - 1].cumulative);
+}
+
+document.querySelectorAll('.roadmap-toggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.roadmap-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeSales = parseInt(btn.dataset.sales);
+    renderTimeline();
+  });
+});
+renderTimeline();
+
+// ======== LEGACY PRODUCTS ========
+const legacyContainer = document.getElementById('legacyProducts');
+LEGACY.forEach(p => {
+  const el = document.createElement('div');
+  el.className = 'legacy-product' + (p.featured ? ' featured' : '');
+  el.innerHTML = `<div class="legacy-product-icon">${p.icon}</div><div class="legacy-product-name">${p.name}</div>${p.featured ? '<div class="legacy-product-badge">New Addition</div>' : ''}`;
+  legacyContainer.appendChild(el);
+});
+
+// ======== INVESTMENT CARDS ========
+const investContainer = document.getElementById('investCards');
+INVEST_ITEMS.forEach(c => {
+  const card = document.createElement('div');
+  card.className = 'invest-card';
+  card.innerHTML = `<span class="invest-icon">${c.icon}</span><div class="invest-info"><div class="invest-name">${c.item}</div><div class="invest-result">${c.result}</div></div><div class="invest-cost">${c.cost}</div>`;
+  investContainer.appendChild(card);
+});
+
+// ======== CALCULATOR ========
+let calcPkg = 'quad', calcRank = 6, calcSales = 2;
+
+function updateCalc() {
+  const perPoint = calcPkg === 'quad' ? 1010 : 351;
+  const points = Math.min(calcRank + 2, 8);
+  const perSale = perPoint * points;
+  const monthly = perSale * calcSales;
+  const yearly = monthly * 12;
+
+  document.getElementById('calcPerSale').textContent = '$' + perSale.toLocaleString();
+  document.getElementById('calcMonthly').textContent = '$' + monthly.toLocaleString();
+  document.getElementById('calcYearly').textContent = '$' + yearly.toLocaleString();
+  document.getElementById('rankLabel').textContent = calcRank + 'A' + (calcRank >= 6 ? ' ⭐' : '');
+  document.getElementById('salesLabel').textContent = calcSales;
+
+  const hackNote = document.getElementById('hackNote');
+  if (calcPkg === 'quad') {
+    hackNote.style.display = 'block';
+    hackNote.querySelector('p').textContent = `✦ With the 2A Ukon Hack, your top position earns an extra 2 commission points on every sale — that's an additional $${(perPoint * 2).toLocaleString()} per sale built in.`;
+  } else {
+    hackNote.style.display = 'none';
+  }
+}
+
+document.querySelectorAll('#packageToggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#packageToggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    calcPkg = btn.dataset.pkg;
+    updateCalc();
+  });
+});
+
+document.getElementById('rankSlider').addEventListener('input', (e) => {
+  calcRank = parseInt(e.target.value);
+  updateCalc();
+});
+
+document.getElementById('salesSlider').addEventListener('input', (e) => {
+  calcSales = parseInt(e.target.value);
+  updateCalc();
+});
+
+updateCalc();
+
+// ======== ANIMATED NUMBERS ========
+function animateNumber(el, target, duration = 1200) {
+  const start = Date.now();
+  const prefix = '$';
+  function tick() {
+    const elapsed = Date.now() - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.floor(eased * target);
+    el.textContent = prefix + current.toLocaleString();
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+// Animate the $776 number on scroll
+const earningsEl = document.querySelector('[data-animate-number]');
+if (earningsEl) {
+  const numObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        animateNumber(earningsEl, 776);
+        earningsEl.textContent += '+';
+        numObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  numObserver.observe(earningsEl);
+}
+</script>
+</body>
+</html>
